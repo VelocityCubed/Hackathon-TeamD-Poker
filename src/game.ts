@@ -20,6 +20,7 @@ export interface GameState {
   dealer: number;
   smallBlind: number;
   bigBlind: number;
+  playersActedThisRound: string[];
 }
 
 const suits: Suit[] = ['hearts', 'diamonds', 'clubs', 'spades'];
@@ -77,7 +78,8 @@ export function createGame(existingChips?: { player: number; bot: number }): Gam
     phase: 'preflop',
     dealer: 0,
     smallBlind: 10,
-    bigBlind: 20
+    bigBlind: 20,
+    playersActedThisRound: []
   };
 }
 
@@ -171,6 +173,7 @@ export function playerAction(
     case 'fold':
       player.folded = true;
       game.phase = 'ended';
+      player.currentBet = 0;
       break;
       
     case 'check':
@@ -199,6 +202,18 @@ export function playerAction(
       return false;
   }
 
+  if (!game.playersActedThisRound) {
+    game.playersActedThisRound = [];
+  }
+
+  if (action === 'bet' || action === 'raise') {
+    game.playersActedThisRound = [playerId];
+  } else if (action === 'fold') {
+    game.playersActedThisRound = game.playersActedThisRound.filter(id => id !== playerId);
+  } else if (!game.playersActedThisRound.includes(playerId)) {
+    game.playersActedThisRound.push(playerId);
+  }
+
   // Move to next player
   game.currentPlayerIndex = (game.currentPlayerIndex + 1) % game.players.length;
   
@@ -210,12 +225,18 @@ export function isRoundComplete(game: GameState): boolean {
   if (activePlayers.length <= 1) return true;
   
   const maxBet = getMaxBet(game);
-  return activePlayers.every(p => p.currentBet === maxBet);
+  const actedSet = new Set(game.playersActedThisRound ?? []);
+  if (actedSet.size < activePlayers.length) {
+    return false;
+  }
+
+  return activePlayers.every(p => p.currentBet === maxBet && actedSet.has(p.id));
 }
 
 export function advancePhase(game: GameState): void {
   // Reset current bets for next round
   game.players.forEach(p => p.currentBet = 0);
+  game.playersActedThisRound = [];
   
   switch (game.phase) {
     case 'preflop':

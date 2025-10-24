@@ -44,6 +44,11 @@ app.post('/api/game/new', (req: Request, res: Response) => {
   });
 });
 
+app.post('/api/game/reset', (_req: Request, res: Response) => {
+  currentGame = null;
+  res.json({ success: true });
+});
+
 // Start new round (preserve existing chip counts)
 app.post('/api/game/next-round', (req: Request, res: Response) => {
   if (!currentGame) {
@@ -220,11 +225,15 @@ function determineWinner(game: GameState): { winnerId: string; hand: string; win
   
   if (activePlayers.length === 1) {
     const winner = activePlayers[0];
-    winner.chips += game.pot;
+    const potAmount = game.pot;
+    if (potAmount > 0) {
+      winner.chips += potAmount;
+    }
+    finalizeRound(game, winner.id);
     return {
       winnerId: winner.id,
       hand: 'Opponent folded',
-      winAmount: game.pot
+      winAmount: potAmount
     };
   }
   
@@ -245,13 +254,26 @@ function determineWinner(game: GameState): { winnerId: string; hand: string; win
     }
   }
   
-  bestPlayer.chips += game.pot;
+  const potAmount = game.pot;
+  if (potAmount > 0) {
+    bestPlayer.chips += potAmount;
+  }
+  finalizeRound(game, bestPlayer.id);
   
   return {
     winnerId: bestPlayer.id,
     hand: bestHand.description,
-    winAmount: game.pot
+    winAmount: potAmount
   };
+}
+
+function finalizeRound(game: GameState, winnerId: string) {
+  game.players.forEach(player => {
+    player.currentBet = 0;
+  });
+  game.pot = 0;
+  game.playersActedThisRound = [];
+  game.phase = 'ended';
 }
 
 function findBestHand(cards: Card[]) {

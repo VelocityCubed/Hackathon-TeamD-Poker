@@ -262,7 +262,18 @@
             document.getElementById('fold-btn').disabled = !isPlayerTurn || player.folded;
             document.getElementById('check-btn').disabled = !isPlayerTurn || callAmount > 0;
             document.getElementById('call-btn').disabled = !isPlayerTurn || callAmount === 0;
-            document.getElementById('raise-btn').disabled = !isPlayerTurn;
+            document.getElementById('raise-btn').disabled = !isPlayerTurn || player.chips <= 0;
+            const raiseInput = document.getElementById('raise-amount');
+            if (raiseInput) {
+                raiseInput.disabled = !isPlayerTurn || player.chips <= 0;
+                const maxRaise = Math.max(player.chips, 0);
+                if (maxRaise > 0) {
+                    raiseInput.max = maxRaise;
+                }
+                if (parseInt(raiseInput.value, 10) > maxRaise) {
+                    raiseInput.value = String(maxRaise);
+                }
+            }
             
             if (callAmount > 0) {
                 document.getElementById('call-btn').textContent = `Call ${callAmount}`;
@@ -366,16 +377,48 @@
         }
 
         async function resetGame() {
-            document.getElementById('game-container').classList.add('hidden');
-            document.getElementById('game-container').style.filter = 'none';
-            document.getElementById('game-container').style.pointerEvents = 'auto';
-            document.getElementById('start-container').classList.remove('hidden');
-            hideWinnerModal();
-            document.getElementById('next-round-btn').style.display = 'inline-block';
-            document.getElementById('reset-game-btn').textContent = '🔄 Reset Game';
+            try {
+                await fetch('/api/game/reset', { method: 'POST' });
+            } catch (error) {
+                console.error('Error resetting game:', error);
+            }
+
             if (pollInterval) {
                 clearInterval(pollInterval);
+                pollInterval = null;
             }
+
+            gameState = null;
+            hideWinnerModal();
+
+            const gameContainer = document.getElementById('game-container');
+            gameContainer.classList.add('hidden');
+            gameContainer.style.filter = 'none';
+            gameContainer.style.pointerEvents = 'auto';
+            document.getElementById('start-container').classList.remove('hidden');
+
+            document.getElementById('player-hand').innerHTML = '';
+            document.getElementById('bot-hand').innerHTML = '';
+            document.getElementById('community-cards').innerHTML = '';
+            document.getElementById('player-chips').textContent = '1000';
+            document.getElementById('bot-chips').textContent = '1000';
+            document.getElementById('player-bet').textContent = '0';
+            document.getElementById('bot-bet').textContent = '0';
+            document.getElementById('pot').textContent = '0';
+            document.getElementById('phase').textContent = '-';
+            updateChipDisplay('player-chip-visual', 1000);
+            updateChipDisplay('bot-chip-visual', 1000);
+            updateChipDisplay('pot-chip-visual', 0);
+            document.getElementById('message').textContent = '';
+
+            const raiseInput = document.getElementById('raise-amount');
+            if (raiseInput) {
+                raiseInput.disabled = false;
+                raiseInput.value = '20';
+            }
+
+            document.getElementById('next-round-btn').style.display = 'inline-block';
+            document.getElementById('reset-game-btn').textContent = '🔄 Reset Game';
         }
 
         async function performAction(action, amount) {
@@ -422,7 +465,26 @@
         document.getElementById('check-btn').addEventListener('click', () => performAction('check'));
         document.getElementById('call-btn').addEventListener('click', () => performAction('call'));
         document.getElementById('raise-btn').addEventListener('click', () => {
-            const amount = parseInt(document.getElementById('raise-amount').value);
+            const raiseInput = document.getElementById('raise-amount');
+            if (!raiseInput) return;
+            const rawAmount = parseInt(raiseInput.value, 10);
+            if (!gameState) return;
+            const player = gameState.players.find(p => p.id === 'player');
+            if (!player) return;
+            const maxRaise = Math.max(player.chips, 0);
+            const amount = Math.min(Math.max(rawAmount || 0, 0), maxRaise);
+            if (amount <= 0) {
+                return;
+            }
+            const maxBet = Math.max(...gameState.players.map(p => p.currentBet));
+            const callAmount = Math.max(maxBet - player.currentBet, 0);
+            if (amount <= callAmount) {
+                const messageEl = document.getElementById('message');
+                if (messageEl) {
+                    messageEl.textContent = `Raise must exceed the call amount of ${callAmount}.`;
+                }
+                return;
+            }
             performAction('bet', amount);
         });
     </script>
