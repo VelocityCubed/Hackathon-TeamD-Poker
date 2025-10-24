@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Component Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/cards.css">
+    <script src="/cardRenderer.js"></script>
+</head>
+<body class="bg-gradient-to-b from-green-900 to-green-800 min-h-screen p-8">
+    <div class="container mx-auto max-w-6xl">
+        <h1 class="text-4xl font-bold text-white text-center mb-8">🃏 Card Component Demo 🃏</h1>
+        
+        <!-- All Cards Display -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">All Cards (52 Standard Deck)</h2>
+            
+            <h3 class="text-xl font-semibold text-red-400 mb-2">♥️ Hearts</h3>
+            <div id="hearts-cards" class="card-hand mb-4"></div>
+            
+            <h3 class="text-xl font-semibold text-red-400 mb-2">♦️ Diamonds</h3>
+            <div id="diamonds-cards" class="card-hand mb-4"></div>
+            
+            <h3 class="text-xl font-semibold text-white mb-2">♠️ Spades</h3>
+            <div id="spades-cards" class="card-hand mb-4"></div>
+            
+            <h3 class="text-xl font-semibold text-green-400 mb-2">♣️ Clubs</h3>
+            <div id="clubs-cards" class="card-hand mb-4"></div>
+        </div>
+        
+        <!-- Size Variants -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">Size Variants</h2>
+            
+            <div class="flex items-end gap-6 flex-wrap">
+                <div class="text-center">
+                    <p class="text-white mb-2">Small (sm)</p>
+                    <div id="size-sm"></div>
+                </div>
+                <div class="text-center">
+                    <p class="text-white mb-2">Medium (md)</p>
+                    <div id="size-md"></div>
+                </div>
+                <div class="text-center">
+                    <p class="text-white mb-2">Large (lg)</p>
+                    <div id="size-lg"></div>
+                </div>
+                <div class="text-center">
+                    <p class="text-white mb-2">Extra Large (xl)</p>
+                    <div id="size-xl"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Face Down Cards -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">Card Backs (Face Down)</h2>
+            <div id="card-backs" class="card-hand"></div>
+        </div>
+        
+        <!-- Sample Poker Hands -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">Sample Poker Hands</h2>
+            
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-yellow-400 mb-2">Royal Flush</h3>
+                <div id="royal-flush" class="card-hand"></div>
+            </div>
+            
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-yellow-400 mb-2">Straight Flush</h3>
+                <div id="straight-flush" class="card-hand"></div>
+            </div>
+            
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-yellow-400 mb-2">Four of a Kind</h3>
+                <div id="four-kind" class="card-hand"></div>
+            </div>
+            
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-yellow-400 mb-2">Full House</h3>
+                <div id="full-house" class="card-hand"></div>
+            </div>
+        </div>
+        
+        <!-- Interactive Demo -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <h2 class="text-2xl font-bold text-white mb-4">Interactive Demo</h2>
+            
+            <div class="mb-4">
+                <button id="deal-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">
+                    Deal Cards (Animated)
+                </button>
+                <button id="flip-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2">
+                    Flip Cards
+                </button>
+                <button id="clear-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                    Clear
+                </button>
+            </div>
+            
+            <div id="interactive-hand" class="card-hand"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Generate all cards for a suit
+        function generateSuit(suit) {
+            const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+            return ranks.map(rank => ({ suit, rank }));
+        }
+        
+        // Display all cards by suit
+        window.CardRenderer.renderCards('hearts-cards', generateSuit('hearts'));
+        window.CardRenderer.renderCards('diamonds-cards', generateSuit('diamonds'));
+        window.CardRenderer.renderCards('spades-cards', generateSuit('spades'));
+        window.CardRenderer.renderCards('clubs-cards', generateSuit('clubs'));
+        
+        // Size variants
+        const aceOfSpades = { suit: 'spades', rank: 'A' };
+        document.getElementById('size-sm').appendChild(
+            window.CardRenderer.createCardElement(aceOfSpades, false, 'sm')
+        );
+        document.getElementById('size-md').appendChild(
+            window.CardRenderer.createCardElement(aceOfSpades, false, 'md')
+        );
+        document.getElementById('size-lg').appendChild(
+            window.CardRenderer.createCardElement(aceOfSpades, false, 'lg')
+        );
+        document.getElementById('size-xl').appendChild(
+            window.CardRenderer.createCardElement(aceOfSpades, false, 'xl')
+        );
+        
+        // Card backs
+        const backs = [null, null, null, null, null];
+        window.CardRenderer.renderCards('card-backs', backs, true);
+        
+        // Sample hands
+        const royalFlush = [
+            { suit: 'hearts', rank: '10' },
+            { suit: 'hearts', rank: 'J' },
+            { suit: 'hearts', rank: 'Q' },
+            { suit: 'hearts', rank: 'K' },
+            { suit: 'hearts', rank: 'A' }
+        ];
+        window.CardRenderer.renderCards('royal-flush', royalFlush);
+        
+        const straightFlush = [
+            { suit: 'spades', rank: '5' },
+            { suit: 'spades', rank: '6' },
+            { suit: 'spades', rank: '7' },
+            { suit: 'spades', rank: '8' },
+            { suit: 'spades', rank: '9' }
+        ];
+        window.CardRenderer.renderCards('straight-flush', straightFlush);
+        
+        const fourKind = [
+            { suit: 'hearts', rank: 'K' },
+            { suit: 'diamonds', rank: 'K' },
+            { suit: 'clubs', rank: 'K' },
+            { suit: 'spades', rank: 'K' },
+            { suit: 'hearts', rank: '2' }
+        ];
+        window.CardRenderer.renderCards('four-kind', fourKind);
+        
+        const fullHouse = [
+            { suit: 'hearts', rank: 'A' },
+            { suit: 'diamonds', rank: 'A' },
+            { suit: 'clubs', rank: 'A' },
+            { suit: 'spades', rank: '8' },
+            { suit: 'hearts', rank: '8' }
+        ];
+        window.CardRenderer.renderCards('full-house', fullHouse);
+        
+        // Interactive demo
+        let isDealt = false;
+        const randomHand = [
+            { suit: 'clubs', rank: 'Q' },
+            { suit: 'hearts', rank: '9' }
+        ];
+        
+        document.getElementById('deal-btn').addEventListener('click', () => {
+            if (!isDealt) {
+                window.CardRenderer.renderCards('interactive-hand', randomHand, true, 'md', true);
+                isDealt = true;
+            }
+        });
+        
+        document.getElementById('flip-btn').addEventListener('click', () => {
+            if (isDealt) {
+                const cards = document.querySelectorAll('#interactive-hand .card');
+                cards.forEach((card, index) => {
+                    setTimeout(() => {
+                        window.CardRenderer.flipCard(card, randomHand[index]);
+                    }, index * 300);
+                });
+            }
+        });
+        
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            document.getElementById('interactive-hand').innerHTML = '';
+            isDealt = false;
+        });
+    </script>
+</body>
+</html>

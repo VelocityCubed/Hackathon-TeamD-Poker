@@ -17,12 +17,47 @@ A simple 1v1 Poker game (Player vs Bot) built with TypeScript, Node.js, Express,
 │   ├── server.ts          # Express server and API endpoints
 │   ├── game.ts            # Core game logic (dealing, betting, phases)
 │   ├── bot.ts             # Bot AI logic
-│   └── handEvaluator.ts   # Poker hand evaluation and comparison
+│   ├── handEvaluator.ts   # Poker hand evaluation and comparison
+│   └── cardRenderer.ts    # Card rendering utilities (TypeScript)
 ├── public/
-│   └── index.html         # Web UI with Tailwind CSS
+│   ├── index.html         # Web UI with Tailwind CSS
+│   ├── card-demo.html     # Card component demo page
+│   ├── cards.css          # Card styling and animations
+│   └── cardRenderer.js    # Client-side card rendering module
+├── assets/
+│   ├── poker-cards.png    # Card sprite sheet (52 cards + backs)
+│   └── ...                # Other game assets (chips, portraits, table)
 ├── package.json           # Project dependencies and scripts
-└── tsconfig.json          # TypeScript configuration
+├── tsconfig.json          # TypeScript configuration
+├── CARD_COMPONENT_GUIDE.md    # Card component documentation
+└── CARD_CODE_REFERENCE.md     # Quick reference for card codes
 ```
+
+## Card Rendering System
+
+This project uses a **sprite sheet-based card rendering system** for displaying playing cards:
+
+- **Sprite Sheet**: `/assets/poker-cards.png` (7 cols × 9 rows, 980px × 1800px)
+- **52 Standard Cards**: All ranks (2-10, J, Q, K, A) in all suits (♥️ ♦️ ♠️ ♣️)
+- **Card Backs**: Multiple colored backs for face-down cards
+- **Responsive**: Automatically scales on mobile devices
+- **Animated**: Smooth dealing and flipping animations
+
+### Quick Start with Cards
+```javascript
+// Create a card element
+const card = { suit: 'hearts', rank: 'A' };
+const cardElement = window.CardRenderer.createCardElement(card, false, 'md', false);
+
+// Render multiple cards with animation
+const hand = [
+  { suit: 'hearts', rank: 'A' },
+  { suit: 'spades', rank: 'K' }
+];
+window.CardRenderer.renderCards('player-hand', hand, false, 'md', true);
+```
+
+See **[CARD_COMPONENT_GUIDE.md](./CARD_COMPONENT_GUIDE.md)** for complete documentation.
 
 ## Installation
 
@@ -45,6 +80,12 @@ npm start
 ```
 
 The game will be available at `http://localhost:3000`
+
+### View Card Demo
+To see all available cards and test the card rendering system:
+```
+http://localhost:3000/card-demo.html
+```
 
 ## How to Play
 
