@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1v1 Poker Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-green-800 min-h-screen flex items-center justify-center">
+    <div class="container mx-auto p-4 max-w-6xl">
+        <h1 class="text-4xl font-bold text-white text-center mb-8">♠️ 1v1 Poker ♥️</h1>
+        
+        <div id="game-container" class="hidden">
+            <!-- Bot Section -->
+            <div class="bg-gray-800 rounded-lg p-6 mb-4 shadow-xl">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">🤖 Bot</h2>
+                        <p class="text-yellow-400 text-xl">Chips: <span id="bot-chips">1000</span></p>
+                        <p class="text-blue-300">Bet: <span id="bot-bet">0</span></p>
+                    </div>
+                    <div id="bot-hand" class="flex gap-2">
+                        <!-- Bot cards will be shown here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Community Cards and Pot -->
+            <div class="bg-gray-900 rounded-lg p-8 mb-4 shadow-xl">
+                <div class="text-center mb-4">
+                    <h3 class="text-xl font-bold text-white mb-2">Community Cards</h3>
+                    <div id="community-cards" class="flex justify-center gap-2 mb-4 min-h-32">
+                        <!-- Community cards will be shown here -->
+                    </div>
+                    <div class="text-center">
+                        <p class="text-yellow-400 text-2xl font-bold">Pot: <span id="pot">0</span></p>
+                        <p class="text-gray-400 text-lg mt-2">Phase: <span id="phase">-</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player Section -->
+            <div class="bg-gray-800 rounded-lg p-6 mb-4 shadow-xl">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">👤 You</h2>
+                        <p class="text-yellow-400 text-xl">Chips: <span id="player-chips">1000</span></p>
+                        <p class="text-blue-300">Bet: <span id="player-bet">0</span></p>
+                    </div>
+                    <div id="player-hand" class="flex gap-2">
+                        <!-- Player cards will be shown here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="bg-gray-800 rounded-lg p-6 shadow-xl">
+                <div id="action-buttons" class="flex flex-wrap gap-3 justify-center">
+                    <button id="fold-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                        Fold
+                    </button>
+                    <button id="check-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                        Check
+                    </button>
+                    <button id="call-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                        Call
+                    </button>
+                    <div class="flex gap-2 items-center">
+                        <input id="raise-amount" type="number" min="10" step="10" value="20" 
+                               class="bg-gray-700 text-white px-4 py-3 rounded-lg w-32">
+                        <button id="raise-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                            Raise
+                        </button>
+                    </div>
+                </div>
+                <div id="message" class="mt-4 text-center text-white text-lg font-semibold"></div>
+            </div>
+        </div>
+
+        <!-- Start/New Game Button -->
+        <div id="start-container" class="text-center">
+            <button id="new-game-btn" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-4 px-8 rounded-lg text-2xl transition shadow-lg">
+                Start New Game
+            </button>
+        </div>
+
+        <!-- Winner Modal -->
+        <div id="winner-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center">
+            <div class="bg-gray-800 rounded-lg p-8 max-w-md text-center">
+                <h2 class="text-3xl font-bold text-white mb-4">🏆 Game Over!</h2>
+                <p id="winner-message" class="text-xl text-yellow-400 mb-6"></p>
+                <button id="play-again-btn" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-6 rounded-lg transition">
+                    Play Again
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameState = null;
+        let pollInterval = null;
+
+        const cardSymbols = {
+            hearts: '♥️',
+            diamonds: '♦️',
+            clubs: '♣️',
+            spades: '♠️'
+        };
+
+        function createCardElement(card, hidden = false) {
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'bg-white rounded-lg p-4 shadow-lg min-w-20 text-center border-2 border-gray-300';
+            
+            if (hidden) {
+                cardDiv.innerHTML = '<div class="text-4xl">🂠</div>';
+                cardDiv.className = 'bg-blue-900 rounded-lg p-4 shadow-lg min-w-20 text-center border-2 border-blue-700';
+            } else {
+                const color = card.suit === 'hearts' || card.suit === 'diamonds' ? 'text-red-600' : 'text-black';
+                cardDiv.innerHTML = `
+                    <div class="${color} text-2xl font-bold">${card.rank}</div>
+                    <div class="${color} text-3xl">${cardSymbols[card.suit]}</div>
+                `;
+            }
+            
+            return cardDiv;
+        }
+
+        function updateUI(data) {
+            const game = data.game;
+            gameState = game;
+            
+            const player = game.players.find(p => p.id === 'player');
+            const bot = game.players.find(p => p.id === 'bot');
+            
+            // Update player info
+            document.getElementById('player-chips').textContent = player.chips;
+            document.getElementById('player-bet').textContent = player.currentBet;
+            document.getElementById('bot-chips').textContent = bot.chips;
+            document.getElementById('bot-bet').textContent = bot.currentBet;
+            document.getElementById('pot').textContent = game.pot;
+            document.getElementById('phase').textContent = game.phase;
+            
+            // Update player hand
+            const playerHandDiv = document.getElementById('player-hand');
+            playerHandDiv.innerHTML = '';
+            player.hand.forEach(card => {
+                playerHandDiv.appendChild(createCardElement(card));
+            });
+            
+            // Update bot hand
+            const botHandDiv = document.getElementById('bot-hand');
+            botHandDiv.innerHTML = '';
+            if (bot.hand && bot.hand.length > 0) {
+                bot.hand.forEach(card => {
+                    botHandDiv.appendChild(createCardElement(card));
+                });
+            } else {
+                // Show hidden cards
+                [1, 2].forEach(() => {
+                    botHandDiv.appendChild(createCardElement(null, true));
+                });
+            }
+            
+            // Update community cards
+            const communityDiv = document.getElementById('community-cards');
+            communityDiv.innerHTML = '';
+            game.communityCards.forEach(card => {
+                communityDiv.appendChild(createCardElement(card));
+            });
+            
+            // Update buttons
+            updateButtons(game, player);
+            
+            // Check for winner
+            if (data.winner) {
+                showWinner(data.winner);
+            }
+        }
+
+        function updateButtons(game, player) {
+            const maxBet = Math.max(...game.players.map(p => p.currentBet));
+            const callAmount = maxBet - player.currentBet;
+            const isPlayerTurn = game.currentPlayerIndex === 0;
+            
+            document.getElementById('fold-btn').disabled = !isPlayerTurn || player.folded;
+            document.getElementById('check-btn').disabled = !isPlayerTurn || callAmount > 0;
+            document.getElementById('call-btn').disabled = !isPlayerTurn || callAmount === 0;
+            document.getElementById('raise-btn').disabled = !isPlayerTurn;
+            
+            if (callAmount > 0) {
+                document.getElementById('call-btn').textContent = `Call ${callAmount}`;
+            } else {
+                document.getElementById('call-btn').textContent = 'Call';
+            }
+            
+            const message = document.getElementById('message');
+            if (!isPlayerTurn && !player.folded && game.phase !== 'showdown') {
+                message.textContent = 'Bot is thinking...';
+            } else if (isPlayerTurn) {
+                message.textContent = 'Your turn!';
+            } else {
+                message.textContent = '';
+            }
+        }
+
+        function showWinner(winner) {
+            const winnerModal = document.getElementById('winner-modal');
+            const winnerMessage = document.getElementById('winner-message');
+            
+            if (winner.winnerId === 'player') {
+                winnerMessage.textContent = `You won ${winner.winAmount} chips with ${winner.hand}!`;
+            } else {
+                winnerMessage.textContent = `Bot won ${winner.winAmount} chips with ${winner.hand}.`;
+            }
+            
+            winnerModal.classList.remove('hidden');
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+        }
+
+        async function startNewGame() {
+            try {
+                const response = await fetch('/api/game/new', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('game-container').classList.remove('hidden');
+                    document.getElementById('start-container').classList.add('hidden');
+                    document.getElementById('winner-modal').classList.add('hidden');
+                    updateUI(data);
+                    startPolling();
+                }
+            } catch (error) {
+                console.error('Error starting game:', error);
+            }
+        }
+
+        async function performAction(action, amount) {
+            try {
+                const response = await fetch('/api/game/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, amount })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    updateUI(data);
+                }
+            } catch (error) {
+                console.error('Error performing action:', error);
+            }
+        }
+
+        async function checkGameState() {
+            try {
+                const response = await fetch('/api/game/check');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateUI(data);
+                }
+            } catch (error) {
+                console.error('Error checking game state:', error);
+            }
+        }
+
+        function startPolling() {
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(checkGameState, 1000);
+        }
+
+        // Event listeners
+        document.getElementById('new-game-btn').addEventListener('click', startNewGame);
+        document.getElementById('play-again-btn').addEventListener('click', startNewGame);
+        
+        document.getElementById('fold-btn').addEventListener('click', () => performAction('fold'));
+        document.getElementById('check-btn').addEventListener('click', () => performAction('check'));
+        document.getElementById('call-btn').addEventListener('click', () => performAction('call'));
+        document.getElementById('raise-btn').addEventListener('click', () => {
+            const amount = parseInt(document.getElementById('raise-amount').value);
+            performAction('bet', amount);
+        });
+    </script>
+</body>
+</html>
