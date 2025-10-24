@@ -44,14 +44,14 @@ function shuffleDeck(deck: Card[]): Card[] {
   return shuffled;
 }
 
-export function createGame(): GameState {
+export function createGame(existingChips?: { player: number; bot: number }): GameState {
   const deck = shuffleDeck(createDeck());
   
   const players: Player[] = [
     {
       id: 'player',
       name: 'Player',
-      chips: 1000,
+      chips: existingChips?.player ?? 1000,
       hand: [],
       currentBet: 0,
       folded: false,
@@ -60,7 +60,7 @@ export function createGame(): GameState {
     {
       id: 'bot',
       name: 'Bot',
-      chips: 1000,
+      chips: existingChips?.bot ?? 1000,
       hand: [],
       currentBet: 0,
       folded: false,

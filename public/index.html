@@ -113,13 +113,19 @@
         </div>
 
         <!-- Winner Modal -->
-        <div id="winner-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center">
-            <div class="bg-gray-800 rounded-lg p-8 max-w-md text-center">
-                <h2 class="text-3xl font-bold text-white mb-4">🏆 Game Over!</h2>
-                <p id="winner-message" class="text-xl text-yellow-400 mb-6"></p>
-                <button id="play-again-btn" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-6 rounded-lg transition">
-                    Play Again
-                </button>
+        <div id="winner-modal" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+            <div class="bg-gradient-to-b from-gray-800 to-gray-900 rounded-xl p-10 max-w-lg mx-4 text-center shadow-2xl border-4 border-yellow-500 transform scale-100 transition-all">
+                <h2 class="text-4xl font-bold text-white mb-2">🏆 Round Over! 🏆</h2>
+                <div class="bg-yellow-500 h-1 w-32 mx-auto mb-6 rounded-full"></div>
+                <p id="winner-message" class="text-2xl text-yellow-400 mb-8 font-semibold leading-relaxed"></p>
+                <div class="flex gap-4 justify-center flex-wrap">
+                    <button id="next-round-btn" class="bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold py-4 px-8 rounded-lg transition-all shadow-lg hover:shadow-xl hover:scale-105 transform">
+                        🎲 Next Round
+                    </button>
+                    <button id="reset-game-btn" class="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold py-4 px-8 rounded-lg transition-all shadow-lg hover:shadow-xl hover:scale-105 transform">
+                        🔄 Reset Game
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -284,17 +290,46 @@
         function showWinner(winner) {
             const winnerModal = document.getElementById('winner-modal');
             const winnerMessage = document.getElementById('winner-message');
+            const gameContainer = document.getElementById('game-container');
+            const actionButtons = document.getElementById('action-buttons');
+            
+            // Disable all game buttons
+            actionButtons.querySelectorAll('button, input').forEach(el => el.disabled = true);
+            
+            // Add blur effect to game container
+            gameContainer.style.filter = 'blur(3px)';
+            gameContainer.style.pointerEvents = 'none';
             
             if (winner.winnerId === 'player') {
-                winnerMessage.textContent = `You won ${winner.winAmount} chips with ${winner.hand}!`;
+                winnerMessage.innerHTML = `🎉 You won <strong>${winner.winAmount} chips</strong> with <strong>${winner.hand}</strong>! 🎉`;
             } else {
-                winnerMessage.textContent = `Bot won ${winner.winAmount} chips with ${winner.hand}.`;
+                winnerMessage.innerHTML = `Bot won <strong>${winner.winAmount} chips</strong> with <strong>${winner.hand}</strong>.`;
             }
             
+            // Show modal with animation
             winnerModal.classList.remove('hidden');
+            setTimeout(() => {
+                winnerModal.querySelector('div').style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    winnerModal.querySelector('div').style.transform = 'scale(1)';
+                }, 200);
+            }, 10);
+            
             if (pollInterval) {
                 clearInterval(pollInterval);
             }
+        }
+
+        function hideWinnerModal() {
+            const winnerModal = document.getElementById('winner-modal');
+            const gameContainer = document.getElementById('game-container');
+            
+            // Remove blur effect
+            gameContainer.style.filter = 'none';
+            gameContainer.style.pointerEvents = 'auto';
+            
+            // Hide modal
+            winnerModal.classList.add('hidden');
         }
 
         async function startNewGame() {
@@ -304,13 +339,49 @@
                 
                 if (data.success) {
                     document.getElementById('game-container').classList.remove('hidden');
+                    document.getElementById('game-container').style.filter = 'none';
+                    document.getElementById('game-container').style.pointerEvents = 'auto';
                     document.getElementById('start-container').classList.add('hidden');
-                    document.getElementById('winner-modal').classList.add('hidden');
+                    hideWinnerModal();
                     updateUI(data);
                     startPolling();
                 }
             } catch (error) {
                 console.error('Error starting game:', error);
+            }
+        }
+
+        async function startNextRound() {
+            try {
+                const response = await fetch('/api/game/next-round', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    hideWinnerModal();
+                    updateUI(data);
+                    startPolling();
+                } else if (data.gameOver) {
+                    // One player is out of chips - show final game over
+                    const winnerMessage = document.getElementById('winner-message');
+                    winnerMessage.innerHTML = `<strong>${data.error}</strong><br>Game Over! 🏁`;
+                    document.getElementById('next-round-btn').style.display = 'none';
+                    document.getElementById('reset-game-btn').textContent = '🎮 New Game';
+                }
+            } catch (error) {
+                console.error('Error starting next round:', error);
+            }
+        }
+
+        async function resetGame() {
+            document.getElementById('game-container').classList.add('hidden');
+            document.getElementById('game-container').style.filter = 'none';
+            document.getElementById('game-container').style.pointerEvents = 'auto';
+            document.getElementById('start-container').classList.remove('hidden');
+            hideWinnerModal();
+            document.getElementById('next-round-btn').style.display = 'inline-block';
+            document.getElementById('reset-game-btn').textContent = '🔄 Reset Game';
+            if (pollInterval) {
+                clearInterval(pollInterval);
             }
         }
 
@@ -351,7 +422,8 @@
 
         // Event listeners
         document.getElementById('new-game-btn').addEventListener('click', startNewGame);
-        document.getElementById('play-again-btn').addEventListener('click', startNewGame);
+        document.getElementById('next-round-btn').addEventListener('click', startNextRound);
+        document.getElementById('reset-game-btn').addEventListener('click', resetGame);
         
         document.getElementById('fold-btn').addEventListener('click', () => performAction('fold'));
         document.getElementById('check-btn').addEventListener('click', () => performAction('check'));

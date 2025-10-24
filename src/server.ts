@@ -23,9 +23,52 @@ app.use('/assets', express.static(path.join(__dirname, '../assets')));
 
 let currentGame: GameState | null = null;
 
-// Initialize new game
+// Initialize new game (fresh start with 1000 chips)
 app.post('/api/game/new', (req: Request, res: Response) => {
   currentGame = createGame();
+  dealHands(currentGame);
+  postBlinds(currentGame);
+  
+  // If it's bot's turn after blinds, execute bot turn
+  if (currentGame.currentPlayerIndex === 1) {
+    setTimeout(() => {
+      if (currentGame) {
+        executeBotTurn(currentGame);
+      }
+    }, 500);
+  }
+  
+  res.json({
+    success: true,
+    game: sanitizeGameState(currentGame, 'player')
+  });
+});
+
+// Start new round (preserve existing chip counts)
+app.post('/api/game/next-round', (req: Request, res: Response) => {
+  if (!currentGame) {
+    return res.status(404).json({ success: false, error: 'No active game' });
+  }
+  
+  // Save current chip counts
+  const player = currentGame.players.find(p => p.id === 'player');
+  const bot = currentGame.players.find(p => p.id === 'bot');
+  
+  if (!player || !bot) {
+    return res.status(400).json({ success: false, error: 'Invalid game state' });
+  }
+  
+  // Check if either player is out of chips
+  if (player.chips <= 0 || bot.chips <= 0) {
+    return res.json({
+      success: false,
+      error: 'Game over - one player is out of chips',
+      gameOver: true
+    });
+  }
+  
+  // Create new round with existing chip counts
+  currentGame = createGame({ player: player.chips, bot: bot.chips });
   dealHands(currentGame);
   postBlinds(currentGame);
   
