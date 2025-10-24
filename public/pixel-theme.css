@@ -1,0 +1,322 @@
+/**
+ * Pixel Art Texas Themed CSS
+ * Retro gaming aesthetic with chunky borders and pixel fonts
+ */
+
+/* Global pixel art styling */
+* {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+.pixel-body {
+  font-family: 'Press Start 2P', cursive;
+}
+
+/* Pixel text styling */
+.pixel-text {
+  font-family: 'Press Start 2P', cursive;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 
+    3px 3px 0px rgba(0, 0, 0, 0.8),
+    -1px -1px 0px rgba(0, 0, 0, 0.5);
+}
+
+/* Main title styling */
+.pixel-title {
+  font-family: 'Press Start 2P', cursive;
+  color: #FFD700;
+  text-transform: uppercase;
+  text-shadow: 
+    4px 4px 0px #8B4513,
+    -2px -2px 0px rgba(0, 0, 0, 0.8);
+  letter-spacing: 2px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Pixel box containers */
+.pixel-box {
+  background: #2a1810;
+  border: 6px solid #8B4513;
+  box-shadow: 
+    inset 0 0 0 3px #5d3a1a,
+    0 8px 0 rgba(0, 0, 0, 0.5),
+    0 12px 20px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+.pixel-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.2) 50%, 
+    transparent 100%);
+}
+
+/* Red box variant (for bot) */
+.pixel-box-red {
+  border-color: #8B0000;
+  background: linear-gradient(135deg, #2a0a0a 0%, #1a0505 100%);
+}
+
+.pixel-box-red::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  border: 2px solid #ff0000;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Blue box variant (for player) */
+.pixel-box-blue {
+  border-color: #00008B;
+  background: linear-gradient(135deg, #0a0a2a 0%, #05051a 100%);
+}
+
+.pixel-box-blue::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  border: 2px solid #4169E1;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Poker table area */
+.poker-table-area {
+  background-image: url('/assets/poker-table.png');
+  background-size: cover;
+  background-position: center;
+  min-height: 300px;
+  border: 8px solid #8B4513;
+  box-shadow: 
+    inset 0 0 0 4px #D2691E,
+    0 10px 0 rgba(0, 0, 0, 0.6),
+    0 15px 30px rgba(0, 0, 0, 0.7);
+}
+
+/* Pot info box */
+.pixel-pot-box {
+  background: rgba(0, 0, 0, 0.85);
+  border: 5px solid #FFD700;
+  box-shadow: 
+    inset 0 0 0 2px #8B4513,
+    0 6px 0 rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+/* Portrait styling */
+.pixel-portrait {
+  border: 6px solid #8B4513;
+  box-shadow: 
+    0 0 0 3px #FFD700,
+    0 6px 0 rgba(0, 0, 0, 0.6),
+    0 8px 15px rgba(0, 0, 0, 0.5);
+  image-rendering: pixelated;
+}
+
+/* Pixel button base */
+.pixel-btn {
+  font-family: 'Press Start 2P', cursive;
+  text-transform: uppercase;
+  border: 4px solid;
+  box-shadow: 
+    inset 0 0 0 2px rgba(255, 255, 255, 0.3),
+    0 6px 0 rgba(0, 0, 0, 0.5),
+    0 8px 15px rgba(0, 0, 0, 0.4);
+  position: relative;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  letter-spacing: 1px;
+}
+
+.pixel-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 
+    inset 0 0 0 2px rgba(255, 255, 255, 0.4),
+    0 8px 0 rgba(0, 0, 0, 0.5),
+    0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+.pixel-btn:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 
+    inset 0 0 0 2px rgba(0, 0, 0, 0.3),
+    0 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+.pixel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.8);
+}
+
+/* Button color variants */
+.pixel-btn-red {
+  background: linear-gradient(180deg, #DC143C 0%, #8B0000 100%);
+  border-color: #8B0000;
+  color: white;
+}
+
+.pixel-btn-red:hover:not(:disabled) {
+  background: linear-gradient(180deg, #FF1744 0%, #A30000 100%);
+}
+
+.pixel-btn-blue {
+  background: linear-gradient(180deg, #4169E1 0%, #00008B 100%);
+  border-color: #00008B;
+  color: white;
+}
+
+.pixel-btn-blue:hover:not(:disabled) {
+  background: linear-gradient(180deg, #5A7FFF 0%, #0000A3 100%);
+}
+
+.pixel-btn-green {
+  background: linear-gradient(180deg, #32CD32 0%, #228B22 100%);
+  border-color: #228B22;
+  color: white;
+}
+
+.pixel-btn-green:hover:not(:disabled) {
+  background: linear-gradient(180deg, #3FE03F 0%, #2A9D2A 100%);
+}
+
+.pixel-btn-purple {
+  background: linear-gradient(180deg, #9370DB 0%, #4B0082 100%);
+  border-color: #4B0082;
+  color: white;
+}
+
+.pixel-btn-purple:hover:not(:disabled) {
+  background: linear-gradient(180deg, #A380EE 0%, #5A009A 100%);
+}
+
+.pixel-btn-yellow {
+  background: linear-gradient(180deg, #FFD700 0%, #FF8C00 100%);
+  border-color: #FF8C00;
+  color: #000;
+  text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.5);
+}
+
+.pixel-btn-yellow:hover:not(:disabled) {
+  background: linear-gradient(180deg, #FFED4E 0%, #FFA500 100%);
+}
+
+/* Input styling */
+.pixel-input {
+  font-family: 'Press Start 2P', cursive;
+  background: #1a1a1a;
+  border: 4px solid #8B4513;
+  color: #FFD700;
+  box-shadow: 
+    inset 0 0 0 2px #5d3a1a,
+    0 4px 0 rgba(0, 0, 0, 0.5);
+  text-align: center;
+  font-size: 16px;
+}
+
+.pixel-input:focus {
+  outline: none;
+  border-color: #FFD700;
+  box-shadow: 
+    inset 0 0 0 2px #5d3a1a,
+    0 4px 0 rgba(0, 0, 0, 0.5),
+    0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+/* Modal styling */
+.pixel-modal {
+  background: linear-gradient(180deg, #2a1810 0%, #1a0a05 100%);
+  border: 8px solid #8B4513;
+  box-shadow: 
+    inset 0 0 0 4px #FFD700,
+    0 15px 0 rgba(0, 0, 0, 0.7),
+    0 20px 40px rgba(0, 0, 0, 0.8);
+}
+
+/* Card enhancements for pixel theme */
+.card {
+  filter: contrast(1.1) saturate(1.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .pixel-text {
+    font-size: 0.7em;
+    letter-spacing: 0.5px;
+  }
+  
+  .pixel-title {
+    font-size: 1.5rem !important;
+    letter-spacing: 1px;
+  }
+  
+  .pixel-btn {
+    font-size: 0.6em;
+    padding: 0.5rem 1rem !important;
+  }
+  
+  .pixel-box {
+    border-width: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pixel-text {
+    font-size: 0.5em;
+  }
+  
+  .pixel-title {
+    font-size: 1rem !important;
+  }
+  
+  .pixel-btn {
+    font-size: 0.5em;
+  }
+}
+
+/* Animation for winner */
+@keyframes winner-glow {
+  0%, 100% {
+    box-shadow: 
+      inset 0 0 0 4px #FFD700,
+      0 15px 0 rgba(0, 0, 0, 0.7),
+      0 20px 40px rgba(0, 0, 0, 0.8),
+      0 0 30px rgba(255, 215, 0, 0.5);
+  }
+  50% {
+    box-shadow: 
+      inset 0 0 0 4px #FFD700,
+      0 15px 0 rgba(0, 0, 0, 0.7),
+      0 20px 40px rgba(0, 0, 0, 0.8),
+      0 0 50px rgba(255, 215, 0, 0.8);
+  }
+}
+
+.pixel-modal {
+  animation: winner-glow 2s ease-in-out infinite;
+}
